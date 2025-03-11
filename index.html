@@ -3,18 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detección de Gestos</title>
+    <title>Piedra, Papel o Tijeras</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        video {
+            border: 2px solid black;
+            margin-bottom: 10px;
+        }
+        #resultado {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+        #eleccion-maquina {
+            font-size: 18px;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        #ganador {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: blue;
+        }
+    </style>
 </head>
 <body>
     <h1>Juego de Piedra, Papel o Tijeras</h1>
     <video id="video" width="640" height="480" autoplay></video>
-    <button id="capturar">Capturar</button>
-    <p id="resultado">Gesto detectado: </p>
+    <br>
+    <button id="capturar">Jugar</button>
+    <p id="resultado">Tu gesto: </p>
+    <p id="eleccion-maquina">Elección de la máquina: </p>
+    <p id="ganador">Resultado: </p>
 
     <script>
         const video = document.getElementById("video");
         const capturarBtn = document.getElementById("capturar");
         const resultado = document.getElementById("resultado");
+        const eleccionMaquina = document.getElementById("eleccion-maquina");
+        const ganador = document.getElementById("ganador");
+
+        // Opciones de la máquina
+        const opciones = ["piedra", "papel", "tijeras"];
 
         // Acceder a la cámara
         navigator.mediaDevices.getUserMedia({ video: true })
@@ -42,7 +75,33 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    resultado.textContent = "Gesto detectado: " + data.gesto;
+                    const gestoJugador = data.gesto;
+                    resultado.textContent = "Tu gesto: " + gestoJugador;
+
+                    if (gestoJugador === "desconocido") {
+                        ganador.textContent = "No se detectó un gesto válido.";
+                        return;
+                    }
+
+                    // Elección de la máquina
+                    const gestoComputadora = opciones[Math.floor(Math.random() * opciones.length)];
+                    eleccionMaquina.textContent = "Elección de la máquina: " + gestoComputadora;
+
+                    // Determinar el resultado
+                    if (gestoJugador === gestoComputadora) {
+                        ganador.textContent = "Empate!";
+                        ganador.style.color = "orange";
+                    } else if (
+                        (gestoJugador === "piedra" && gestoComputadora === "tijeras") ||
+                        (gestoJugador === "papel" && gestoComputadora === "piedra") ||
+                        (gestoJugador === "tijeras" && gestoComputadora === "papel")
+                    ) {
+                        ganador.textContent = "¡Ganaste!";
+                        ganador.style.color = "green";
+                    } else {
+                        ganador.textContent = "Perdiste!";
+                        ganador.style.color = "red";
+                    }
                 })
                 .catch(error => {
                     console.error("Error en la detección:", error);
