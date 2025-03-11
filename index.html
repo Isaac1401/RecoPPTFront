@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detección de Gestos</title>
+</head>
+<body>
+    <h1>Juego de Piedra, Papel o Tijeras</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="capturar">Capturar</button>
+    <p id="resultado">Gesto detectado: </p>
+
+    <script>
+        const video = document.getElementById("video");
+        const capturarBtn = document.getElementById("capturar");
+        const resultado = document.getElementById("resultado");
+
+        // Acceder a la cámara
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error al acceder a la cámara:", err);
+            });
+
+        capturarBtn.addEventListener("click", () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append("file", blob, "captura.jpg");
+
+                fetch("https://tu-servidor-fastapi.com/detectar/", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resultado.textContent = "Gesto detectado: " + data.gesto;
+                })
+                .catch(error => {
+                    console.error("Error en la detección:", error);
+                });
+            }, "image/jpeg");
+        });
+    </script>
+</body>
+</html>
